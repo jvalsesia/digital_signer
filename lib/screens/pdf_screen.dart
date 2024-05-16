@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:digital_signer/utils/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
 
 class PdfScreen extends StatelessWidget {
@@ -21,15 +22,36 @@ class PdfScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
-        title: const Text("Start"),
+        title: const Text("PDF"),
       ),
-      body: PdfPreview(
-        build: (format) async => await pdfToDoc(filePath!),
-        allowPrinting: false,
-        allowSharing: false,
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        actionBarTheme: const PdfActionBarTheme(backgroundColor: Colors.grey),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Expanded(
+          child: Column(
+            children: [
+              Expanded(
+                child: PdfPreview(
+                  build: (format) async => await pdfToDoc(filePath!),
+                  allowPrinting: false,
+                  allowSharing: false,
+                  canChangeOrientation: false,
+                  canChangePageFormat: false,
+                  actionBarTheme:
+                      const PdfActionBarTheme(backgroundColor: Colors.grey),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  context.go('/start');
+                },
+                child: const Text("Start"),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
