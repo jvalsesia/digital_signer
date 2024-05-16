@@ -117,6 +117,7 @@ class _FilePickerWidgetState extends State<FilePickerWidget>
                         if (kIsWeb) {
                           context.go('/pdf', extra: fileBytes);
                         } else {
+                          logger.w(">>> $filePath");
                           context.go('/pdf', extra: filePath);
                         }
                       },
