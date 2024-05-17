@@ -1,7 +1,7 @@
-import 'package:digital_signer/utils/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
+import 'package:go_router/go_router.dart';
 
 class PdfWebScreen extends StatelessWidget {
   final Uint8List? fileBytes;
@@ -14,15 +14,37 @@ class PdfWebScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    logger.d(fileBytes);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
-        title: const Text("Start"),
+        title: const Text("PDF"),
       ),
-      body: PdfPreview(
-        build: (format) async => await pdfBytesToDoc(fileBytes!),
-        actionBarTheme: const PdfActionBarTheme(backgroundColor: Colors.grey),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Expanded(
+          child: Column(
+            children: [
+              Expanded(
+                child: PdfPreview(
+                  build: (format) async => await pdfBytesToDoc(fileBytes!),
+                  allowPrinting: false,
+                  allowSharing: false,
+                  canChangeOrientation: false,
+                  canChangePageFormat: false,
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  context.go('/start');
+                },
+                child: const Text("Start"),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

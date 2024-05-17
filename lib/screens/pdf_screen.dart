@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:digital_signer/utils/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +16,6 @@ class PdfScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    logger.d(filePath);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
@@ -36,8 +33,6 @@ class PdfScreen extends StatelessWidget {
                   allowSharing: false,
                   canChangeOrientation: false,
                   canChangePageFormat: false,
-                  actionBarTheme:
-                      const PdfActionBarTheme(backgroundColor: Colors.grey),
                 ),
               ),
               const SizedBox(
