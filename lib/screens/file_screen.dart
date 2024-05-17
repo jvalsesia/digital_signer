@@ -45,11 +45,13 @@ class _FilePickerWidgetState extends State<FilePickerWidget>
       Uint8List? fileBytes = Uint8List(0);
       if (!kIsWeb) {
         filePath = file.path;
+        logger.w("Getting file using File Path. Path: $filePath");
       } else {
         fileBytes = file.bytes;
+        logger.w("Getting file using File Bytes");
       }
-      logger.d(filePath);
-      logger.w(fileBytes);
+      logger.w("File size: ${file.size} bytes");
+
       setState(() {
         this.filePath = filePath;
         this.fileBytes = fileBytes;
@@ -117,7 +119,6 @@ class _FilePickerWidgetState extends State<FilePickerWidget>
                         if (kIsWeb) {
                           context.go('/pdf', extra: fileBytes);
                         } else {
-                          logger.w(">>> $filePath");
                           context.go('/pdf', extra: filePath);
                         }
                       },
