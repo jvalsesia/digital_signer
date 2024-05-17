@@ -21,28 +21,30 @@ class PdfWebScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Expanded(
-          child: Column(
-            children: [
-              Expanded(
-                child: PdfPreview(
-                  build: (format) async => await pdfBytesToDoc(fileBytes!),
-                  allowPrinting: false,
-                  allowSharing: false,
-                  canChangeOrientation: false,
-                  canChangePageFormat: false,
+        child: Center(
+          child: Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  child: PdfPreview(
+                    build: (format) async => await pdfBytesToDoc(fileBytes!),
+                    allowPrinting: false,
+                    allowSharing: false,
+                    canChangeOrientation: false,
+                    canChangePageFormat: false,
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  context.go('/start');
-                },
-                child: const Text("Start"),
-              ),
-            ],
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    context.go('/start');
+                  },
+                  child: const Text("Start"),
+                ),
+              ],
+            ),
           ),
         ),
       ),

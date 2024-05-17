@@ -1,3 +1,4 @@
+import 'package:digital_signer/handlers/token_handler.dart';
 import 'package:digital_signer/utils/log.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -30,9 +31,12 @@ class FilePickerWidget extends StatefulWidget {
 
 class _FilePickerWidgetState extends State<FilePickerWidget>
     with SingleTickerProviderStateMixin {
-  late Uint8List? fileBytes;
-  late String? filePath;
-
+  late Uint8List fileBytes = Uint8List(0);
+  late String filePath = "";
+  late String fileName = "";
+  late int fileSize = 0;
+  late String accessToken = "";
+  late String tokenExp = "";
   FilePickerResult? result;
 
   Future<void> setFilePathAndBytes() async {
@@ -41,73 +45,78 @@ class _FilePickerWidgetState extends State<FilePickerWidget>
       logger.i("No file selected");
     } else {
       final PlatformFile file = result!.files.first;
-      String? filePath = "";
-      Uint8List? fileBytes = Uint8List(0);
-      if (!kIsWeb) {
-        filePath = file.path;
-        logger.w("Getting file using File Path. Path: $filePath");
-      } else {
-        fileBytes = file.bytes;
-        logger.w("Getting file using File Bytes");
-      }
-      logger.w("File size: ${file.size} bytes");
-
       setState(() {
-        this.filePath = filePath;
-        this.fileBytes = fileBytes;
+        if (!kIsWeb) {
+          filePath = file.path!;
+          fileName = file.name;
+          logger.w("Getting file using File Path. Path: $filePath");
+        } else {
+          fileBytes = file.bytes!;
+          logger.w("Getting file using File Bytes");
+        }
+        fileSize = file.size;
+        logger.w("File size: $fileSize bytes");
       });
     }
   }
 
+  Future<void> getAccessToken() async {
+    final accessToken = await TokenHandler().getAccessToken();
+    final tokenExp = await TokenHandler().getTokenExpirationDate(accessToken);
+
+    setState(() {
+      this.accessToken = accessToken;
+      this.tokenExp = tokenExp;
+    });
+  }
+
+  @override
+  initState() {
+    super.initState();
+    logger.i("initState Called");
+    getAccessToken();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("File picker demo"),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              if (result != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Selected file:',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: result?.files.length ?? 0,
-                        itemBuilder: (context, index) {
-                          return Text(result?.files[index].name ?? '',
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold));
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const SizedBox(
-                            height: 5,
-                          );
-                        },
-                      )
-                    ],
-                  ),
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const SizedBox(
+              height: 150.0,
+              width: 300.0,
+              child: Align(
+                child: Text(
+                  "File",
+                  style: TextStyle(fontSize: 40),
                 ),
-              const Spacer(),
-              Center(
-                child: Row(
+              ),
+            ),
+            Container(
+              height: 300.0,
+              width: 300.0,
+              color: Colors.grey,
+              child: Align(
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Token expires at: $tokenExp',
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          'Selected file: $fileName',
+                        ),
+                      ],
+                    ),
                     ElevatedButton(
                       onPressed: () async {
                         await setFilePathAndBytes();
@@ -124,17 +133,21 @@ class _FilePickerWidgetState extends State<FilePickerWidget>
                       },
                       child: const Text("PDF"),
                     ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        context.go('/start');
-                      },
-                      child: const Text("Start"),
-                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Spacer(),
+            ElevatedButton(
+              onPressed: () async {
+                context.go('/start');
+              },
+              child: const Text("Start"),
+            ),
+          ],
         ),
       ),
     );

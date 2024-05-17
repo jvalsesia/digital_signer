@@ -6,23 +6,47 @@ class StartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ButtonStyle style =
-        ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueGrey,
-        title: const Text("Start"),
-      ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              style: style,
-              onPressed: () {
-                context.go('/file');
-              },
-              child: const Text('File'),
+            const SizedBox(
+              height: 150.0,
+              width: 300.0,
+              child: Align(
+                child: Text(
+                  "Welcome",
+                  style: TextStyle(fontSize: 40),
+                ),
+              ),
+            ),
+            Container(
+              height: 150.0,
+              width: 300.0,
+              color: Colors.grey,
+              child: Align(
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Open File",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.go('/file');
+                      },
+                      child: const Text('PDF'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 150.0,
+              width: 150.0,
             ),
           ],
         ),
