@@ -1,50 +1,98 @@
-import 'dart:io';
+import 'dart:async';
+import 'package:digital_signer/utils/log.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:go_router/go_router.dart';
-import 'package:printing/printing.dart';
 
-class PdfScreen extends StatelessWidget {
-  final String? filePath;
+class PDFScreen extends StatefulWidget {
+  final String? signedDocumentFilePath;
 
-  const PdfScreen({super.key, this.filePath});
+  const PDFScreen({super.key, this.signedDocumentFilePath});
 
-  Future<Uint8List> pdfToDoc(String filePath) async {
-    File pdf = File(filePath);
-    return pdf.readAsBytes();
-  }
+  @override
+  PDFScreenState createState() => PDFScreenState();
+}
+
+class PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
+  final Completer<PDFViewController> _controller =
+      Completer<PDFViewController>();
+  int? pages = 0;
+  int? currentPage = 0;
+  bool isReady = false;
+  String errorMessage = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  child: PdfPreview(
-                    build: (format) async => await pdfToDoc(filePath!),
-                    allowPrinting: false,
-                    allowSharing: false,
-                    canChangeOrientation: false,
-                    canChangePageFormat: false,
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    context.go('/file');
-                  },
-                  child: const Text("File"),
-                ),
-              ],
-            ),
+      body: Stack(
+        children: <Widget>[
+          PDFView(
+            filePath: widget.signedDocumentFilePath,
+            enableSwipe: true,
+            swipeHorizontal: true,
+            autoSpacing: false,
+            pageFling: true,
+            pageSnap: true,
+            defaultPage: currentPage!,
+            fitPolicy: FitPolicy.BOTH,
+            preventLinkNavigation:
+                false, // if set to true the link is handled in flutter
+            onRender: (pages) {
+              setState(() {
+                pages = pages;
+                isReady = true;
+              });
+            },
+            onError: (error) {
+              setState(() {
+                errorMessage = error.toString();
+              });
+              logger.d(error.toString());
+            },
+            onPageError: (page, error) {
+              setState(() {
+                errorMessage = '$page: ${error.toString()}';
+              });
+              logger.d('$page: ${error.toString()}');
+            },
+            onViewCreated: (PDFViewController pdfViewController) {
+              _controller.complete(pdfViewController);
+            },
+            onLinkHandler: (String? uri) {
+              logger.d('goto uri: $uri');
+            },
+            onPageChanged: (int? page, int? total) {
+              logger.d('page change: $page/$total');
+              setState(() {
+                currentPage = page;
+              });
+            },
           ),
-        ),
+          errorMessage.isEmpty
+              ? !isReady
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : Container()
+              : Center(
+                  child: Text(errorMessage),
+                )
+        ],
+      ),
+      floatingActionButton: FutureBuilder<PDFViewController>(
+        future: _controller.future,
+        builder: (context, AsyncSnapshot<PDFViewController> snapshot) {
+          if (snapshot.hasData) {
+            return FloatingActionButton.extended(
+              label: Text("Go to ${pages! ~/ 2}"),
+              onPressed: () async {
+                await snapshot.data!.setPage(pages! ~/ 2);
+              },
+            );
+          }
+
+          return Container();
+        },
       ),
     );
   }

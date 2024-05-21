@@ -39,8 +39,8 @@ class MainApp extends StatelessWidget {
               );
             } else {
               final pdfFilePath = state.extra! as String;
-              return PdfScreen(
-                filePath: pdfFilePath,
+              return PDFScreen(
+                signedDocumentFilePath: pdfFilePath,
               );
             }
           },
