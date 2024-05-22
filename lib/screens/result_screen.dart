@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:digital_signer/screens/input_screen.dart';
 import 'package:digital_signer/utils/constants.dart';
+import 'package:digital_signer/utils/log.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -12,13 +14,17 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger.i(signedDocumentFilePath);
     return Scaffold(
       appBar: AppBar(
         title: const Text('ASSINATURA', style: kLargeButtonTextStyle),
       ),
       body: Column(
         children: [
-          Expanded(child: SfPdfViewer.file(File(signedDocumentFilePath))),
+          Expanded(
+              child: kIsWeb
+                  ? SfPdfViewer.network(signedDocumentFilePath)
+                  : SfPdfViewer.file(File(signedDocumentFilePath))),
           GestureDetector(
             onTap: () {
               Navigator.push(

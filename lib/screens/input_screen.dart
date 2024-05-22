@@ -23,7 +23,8 @@ class InputScreen extends StatefulWidget {
 
 class _InputScreenState extends State<InputScreen> {
   late int fileSize = 0;
-  late Uint8List fileBytes = Uint8List(0);
+  late Uint8List fileBytesDocument = Uint8List(0);
+  late Uint8List fileBytesSignature = Uint8List(0);
   late String documentFilePath = "";
   late String documentFileName = "";
   late String signatureFilePath = "";
@@ -32,8 +33,35 @@ class _InputScreenState extends State<InputScreen> {
   late String signedDocumentFilePath = "";
   late String accessToken = "";
   late String tokenExp = "";
+  late bool isDocumentLoaded = false;
+  late bool isSignatureLoaded = false;
 
-  Future<void> setDocumentPathAndBytes(FileType fileType) async {
+  Future<void> setFileBytes(FileType fileType) async {
+    var result = await FilePicker.platform
+        .pickFiles(allowMultiple: false, type: fileType);
+    if (result == null) {
+      logger.i("No file selected");
+    } else {
+      final PlatformFile file = result.files.first;
+      setState(() {
+        if (fileType == FileType.any) {
+          isDocumentLoaded = true;
+
+          fileBytesDocument = file.bytes!;
+        } else if (fileType == FileType.image) {
+          isSignatureLoaded = true;
+          fileBytesSignature = file.bytes!;
+        }
+
+        logger.w("Getting file using File Bytes");
+
+        fileSize = file.size;
+        logger.w("File size: $fileSize bytes");
+      });
+    }
+  }
+
+  Future<void> setDocumentPath(FileType fileType) async {
     var result = await FilePicker.platform
         .pickFiles(allowMultiple: false, type: fileType);
     if (result == null) {
@@ -44,10 +72,8 @@ class _InputScreenState extends State<InputScreen> {
         if (!kIsWeb) {
           documentFilePath = file.path!;
           documentFileName = file.name;
+          isDocumentLoaded = true;
           logger.w("Getting file using File Path. Path: $documentFilePath");
-        } else {
-          fileBytes = file.bytes!;
-          logger.w("Getting file using File Bytes");
         }
         fileSize = file.size;
         logger.w("File size: $fileSize bytes");
@@ -55,7 +81,7 @@ class _InputScreenState extends State<InputScreen> {
     }
   }
 
-  Future<void> setImagePathAndBytes(FileType fileType) async {
+  Future<void> setImagePath(FileType fileType) async {
     var result = await FilePicker.platform
         .pickFiles(allowMultiple: false, type: fileType);
     if (result == null) {
@@ -66,11 +92,9 @@ class _InputScreenState extends State<InputScreen> {
         if (!kIsWeb) {
           signatureFilePath = file.path!;
           signatureFileName = file.name;
+          isSignatureLoaded = true;
           logger.w(
               "Getting signature using Image Path. Path: $signatureFilePath");
-        } else {
-          fileBytes = file.bytes!;
-          logger.w("Getting file using File Bytes");
         }
         fileSize = file.size;
         logger.w("File size: $fileSize bytes");
@@ -90,12 +114,19 @@ class _InputScreenState extends State<InputScreen> {
 
   Future<String> signDocument() async {
     await getAccessToken();
-    String documentPath = documentFilePath;
-    String imagePath = signatureFilePath;
+
     String texto = "Digitally signed by BRY";
-    final data = await RestHandler()
-        .sendDocument(accessToken, documentPath, imagePath, texto);
-    //var data = jsonDecode(signResponse);
+    dynamic data;
+    if (kIsWeb) {
+      data = await RestHandler().sendDocumentAsBytes(
+          accessToken, fileBytesDocument, fileBytesSignature, texto);
+      //var data = jsonDecode(signResponse);
+    } else {
+      data = await RestHandler().sendDocument(
+          accessToken, documentFilePath, signatureFilePath, texto);
+      //var data = jsonDecode(signResponse);
+    }
+
     logger.w("$data");
 
     var link = data['documentos'][0]['links'][0]['href'];
@@ -104,15 +135,20 @@ class _InputScreenState extends State<InputScreen> {
     });
 
     logger.w(signedDocumentLink);
-    FileHandler fileHandler = FileHandler();
-    var file = await fileHandler.loadPdfFromNetwork(signedDocumentLink);
+    var response = signedDocumentLink;
 
-    setState(() {
-      signedDocumentFilePath = file.path;
-    });
+    if (!kIsWeb) {
+      FileHandler fileHandler = FileHandler();
+      var file = await fileHandler.loadPdfFromNetwork(response);
 
-    logger.w(signedDocumentFilePath);
-    return signedDocumentFilePath;
+      setState(() {
+        signedDocumentFilePath = file.path;
+        response = signedDocumentFilePath;
+      });
+    }
+
+    logger.w(response);
+    return response;
   }
 
   @override
@@ -164,12 +200,10 @@ class _InputScreenState extends State<InputScreen> {
                                           height: 10,
                                         ),
                                         Text(
-                                          documentFileName == ""
-                                              ? "NENHUMA"
-                                              : "OK",
-                                          style: documentFileName == ""
-                                              ? kLabelTextStyleNotOk
-                                              : kLabelTextStyleOk,
+                                          isDocumentLoaded ? "Ok" : "NENHUM",
+                                          style: isDocumentLoaded
+                                              ? kLabelTextStyleOk
+                                              : kLabelTextStyleNotOk,
                                         ),
                                       ],
                                     ),
@@ -178,7 +212,11 @@ class _InputScreenState extends State<InputScreen> {
                                     icon: FontAwesomeIcons.plus,
                                     onPressed: () {
                                       setState(() {
-                                        setDocumentPathAndBytes(FileType.any);
+                                        if (kIsWeb) {
+                                          setFileBytes(FileType.any);
+                                        } else {
+                                          setDocumentPath(FileType.any);
+                                        }
                                       });
                                     },
                                   ),
@@ -233,12 +271,10 @@ class _InputScreenState extends State<InputScreen> {
                                           style: kLabelTextStyle,
                                         ),
                                         Text(
-                                          signatureFileName == ""
-                                              ? "NENHUMA"
-                                              : "OK",
-                                          style: signatureFileName == ""
-                                              ? kLabelTextStyleNotOk
-                                              : kLabelTextStyleOk,
+                                          isSignatureLoaded ? "Ok" : "NENHUMA",
+                                          style: isSignatureLoaded
+                                              ? kLabelTextStyleOk
+                                              : kLabelTextStyleNotOk,
                                         ),
                                       ],
                                     ),
@@ -247,10 +283,14 @@ class _InputScreenState extends State<InputScreen> {
                                     icon: FontAwesomeIcons.plus,
                                     onPressed: () {
                                       setState(() {
-                                        if (Platform.isAndroid) {
-                                          setImagePathAndBytes(FileType.any);
+                                        if (kIsWeb) {
+                                          setFileBytes(FileType.image);
                                         } else {
-                                          setImagePathAndBytes(FileType.image);
+                                          if (Platform.isAndroid) {
+                                            setImagePath(FileType.any);
+                                          } else {
+                                            setImagePath(FileType.image);
+                                          }
                                         }
                                       });
                                     },
@@ -272,12 +312,12 @@ class _InputScreenState extends State<InputScreen> {
           ),
           GestureDetector(
             onTap: () {
-              signDocument().then((value) => {
+              signDocument().then((response) => {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ResultScreen(
-                          signedDocumentFilePath: value,
+                          signedDocumentFilePath: response,
                         ),
                       ),
                     )
