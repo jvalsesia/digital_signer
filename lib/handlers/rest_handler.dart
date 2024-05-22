@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:digital_signer/utils/log.dart';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 class RestHandler {
+  final dio = Dio();
+
   Future<http.Response> postData(String url, Map<String, String> data) async {
     String encodedData = "";
     data.forEach((key, value) =>
@@ -28,8 +31,18 @@ class RestHandler {
           "X6fVgrj4zqBYpYtuKvUK1rCKq7Lpk8wx9yQy2oJhgyePeiCTmRoJZw=="
     };
 
-    final response = await postData(url, data);
-    return response;
+    // final response = await postData(url, data);
+    //return response;
+
+    // Instance level
+    dio.options.contentType = Headers.formUrlEncodedContentType;
+    // or only works once
+    final response = await dio.post(
+      url,
+      data: data,
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+    return response.data;
   }
 
   Future<String> sendDocument(
