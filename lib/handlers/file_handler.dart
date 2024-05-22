@@ -7,9 +7,9 @@ import 'package:path_provider/path_provider.dart';
 class FileHandler {
   Future<File> loadPdfFromNetwork(String url) async {
     final dio = Dio();
-    final dir = await getDownloadsDirectory();
+    final dir = await getApplicationDocumentsDirectory();
     final filename = path.basename(url);
-    final File file = File('${dir?.path}/$filename.pdf');
+    final File file = File('${dir.path}/$filename.pdf');
     final response = await dio.download(
       url,
       file.path,
