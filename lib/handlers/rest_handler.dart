@@ -1,28 +1,10 @@
 import 'dart:convert';
 
-import 'package:digital_signer/utils/log.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 
 class RestHandler {
-  final dio = Dio();
-
-  Future<http.Response> postData(String url, Map<String, String> data) async {
-    String encodedData = "";
-    data.forEach((key, value) =>
-        encodedData += "$key=${Uri.encodeQueryComponent(value)}&");
-    encodedData = encodedData.substring(0, encodedData.length - 1);
-
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      body: encodedData,
-    );
-
-    return response;
-  }
-
-  Future<http.Response> getTokenData() async {
+  Future<Response> getTokenData() async {
+    final dio = Dio();
     String url = "https://cloud.bry.com.br/token-service/jwt";
     Map<String, String> data = {
       "grant_type": "client_credentials",
@@ -30,9 +12,6 @@ class RestHandler {
       "client_secret":
           "X6fVgrj4zqBYpYtuKvUK1rCKq7Lpk8wx9yQy2oJhgyePeiCTmRoJZw=="
     };
-
-    // final response = await postData(url, data);
-    //return response;
 
     // Instance level
     dio.options.contentType = Headers.formUrlEncodedContentType;
@@ -42,13 +21,14 @@ class RestHandler {
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return response.data;
+    return response;
   }
 
-  Future<String> sendDocument(
+  Future<dynamic> sendDocument(
       String token, String documentPath, String imagePath, String texto) async {
+    final dio = Dio();
     String uriHub = "https://hub2.bry.com.br";
-    String service = "/fw/v1/pdf/kms/lote/assinaturas";
+    String endPoint = "/fw/v1/pdf/kms/lote/assinaturas";
 
     String documento = documentPath;
     String perfil = "TIMESTAMP";
@@ -68,15 +48,10 @@ class RestHandler {
 
     String posicao = "INFERIOR_DIREITO";
 
-    var request = http.MultipartRequest('POST', Uri.parse(uriHub + service));
-    request.headers['accept'] = "application/json";
-    request.headers['Content-Type'] = "multipart/form-data";
-    request.headers['Authorization'] = token;
-    request.headers['kms_type'] = kmsType;
-
-    request.files
-        .add(await http.MultipartFile.fromPath('documento', documento));
-    request.files.add(await http.MultipartFile.fromPath('imagem', imagem));
+    dio.options.headers['accept'] = "application/json";
+    dio.options.headers['Content-Type'] = "multipart/form-data";
+    dio.options.headers['Authorization'] = token;
+    dio.options.headers['kms_type'] = kmsType;
 
     var dadosAssinatura = jsonEncode({
       "perfil": perfil,
@@ -103,18 +78,17 @@ class RestHandler {
       "tamanhoFonte": 12,
     });
 
-    request.fields['configuracao_imagem'] = configuracaoImagem;
-    request.fields['configuracao_texto'] = configuracaoTexto;
-    request.fields['dados_assinatura'] = dadosAssinatura;
+    final formData = FormData.fromMap({
+      'configuracao_imagem': configuracaoImagem,
+      'configuracao_texto': configuracaoTexto,
+      'dados_assinatura': dadosAssinatura,
+      'documento':
+          await MultipartFile.fromFile(documento, filename: 'documento'),
+      'imagem': await MultipartFile.fromFile(imagem, filename: 'imagem'),
+    });
 
-    logger.d("reques headers: ${request.headers}");
-    logger.d("reques files: ${request.files.asMap()}");
-    logger.d("reques fields: ${request.fields}");
+    final Response response = await dio.post(uriHub + endPoint, data: formData);
 
-    final response = await request.send();
-
-    // Extract String from Streamed Response
-    var responseString = await response.stream.bytesToString();
-    return responseString;
+    return response.data;
   }
 }

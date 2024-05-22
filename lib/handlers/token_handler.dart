@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:digital_signer/utils/log.dart';
 import 'package:digital_signer/handlers/rest_handler.dart';
 import 'package:digital_signer/handlers/store_handler.dart';
@@ -27,9 +25,10 @@ class TokenHandler {
     String accessToken = "";
     final response = await RestHandler().getTokenData();
     if (response.statusCode == 200) {
-      Map<String, dynamic> tokenResponse =
-          jsonDecode(response.body) as Map<String, dynamic>;
-      TokenData tokenData = TokenData.fromJson(tokenResponse);
+      logger.i("response.data: ${response.data}");
+      // Map<String, dynamic> tokenResponse =
+      //     jsonDecode(response.data) as Map<String, dynamic>;
+      TokenData tokenData = TokenData.fromJson(response.data);
       accessToken = tokenData.accessToken;
     } else {
       // Handle error

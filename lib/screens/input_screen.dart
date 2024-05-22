@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:digital_signer/handlers/file_handler.dart';
 import 'package:digital_signer/handlers/rest_handler.dart';
@@ -33,7 +33,7 @@ class _InputScreenState extends State<InputScreen> {
   late String accessToken = "";
   late String tokenExp = "";
 
-  Future<void> setFilePathAndBytes(FileType fileType) async {
+  Future<void> setDocumentPathAndBytes(FileType fileType) async {
     var result = await FilePicker.platform
         .pickFiles(allowMultiple: false, type: fileType);
     if (result == null) {
@@ -42,16 +42,32 @@ class _InputScreenState extends State<InputScreen> {
       final PlatformFile file = result.files.first;
       setState(() {
         if (!kIsWeb) {
-          if (fileType == FileType.image) {
-            signatureFilePath = file.path!;
-            signatureFileName = file.name;
-            logger.w(
-                "Getting signature using Image Path. Path: $signatureFilePath");
-          } else {
-            documentFilePath = file.path!;
-            documentFileName = file.name;
-            logger.w("Getting file using File Path. Path: $documentFilePath");
-          }
+          documentFilePath = file.path!;
+          documentFileName = file.name;
+          logger.w("Getting file using File Path. Path: $documentFilePath");
+        } else {
+          fileBytes = file.bytes!;
+          logger.w("Getting file using File Bytes");
+        }
+        fileSize = file.size;
+        logger.w("File size: $fileSize bytes");
+      });
+    }
+  }
+
+  Future<void> setImagePathAndBytes(FileType fileType) async {
+    var result = await FilePicker.platform
+        .pickFiles(allowMultiple: false, type: fileType);
+    if (result == null) {
+      logger.i("No file selected");
+    } else {
+      final PlatformFile file = result.files.first;
+      setState(() {
+        if (!kIsWeb) {
+          signatureFilePath = file.path!;
+          signatureFileName = file.name;
+          logger.w(
+              "Getting signature using Image Path. Path: $signatureFilePath");
         } else {
           fileBytes = file.bytes!;
           logger.w("Getting file using File Bytes");
@@ -77,9 +93,9 @@ class _InputScreenState extends State<InputScreen> {
     String documentPath = documentFilePath;
     String imagePath = signatureFilePath;
     String texto = "Digitally signed by BRY";
-    final signResponse = await RestHandler()
+    final data = await RestHandler()
         .sendDocument(accessToken, documentPath, imagePath, texto);
-    var data = jsonDecode(signResponse);
+    //var data = jsonDecode(signResponse);
     logger.w("$data");
 
     var link = data['documentos'][0]['links'][0]['href'];
@@ -162,7 +178,7 @@ class _InputScreenState extends State<InputScreen> {
                                     icon: FontAwesomeIcons.plus,
                                     onPressed: () {
                                       setState(() {
-                                        setFilePathAndBytes(FileType.any);
+                                        setDocumentPathAndBytes(FileType.any);
                                       });
                                     },
                                   ),
@@ -230,9 +246,12 @@ class _InputScreenState extends State<InputScreen> {
                                   RoundIconButton(
                                     icon: FontAwesomeIcons.plus,
                                     onPressed: () {
-                                      setState(() async {
-                                        await setFilePathAndBytes(
-                                            FileType.image);
+                                      setState(() {
+                                        if (Platform.isAndroid) {
+                                          setImagePathAndBytes(FileType.any);
+                                        } else {
+                                          setImagePathAndBytes(FileType.image);
+                                        }
                                       });
                                     },
                                   ),
