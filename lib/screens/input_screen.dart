@@ -61,7 +61,8 @@ class _InputScreenState extends State<InputScreen> {
     }
   }
 
-  Future<void> setDocumentPath(FileType fileType) async {
+  Future<void> setDocumentPath() async {
+    FileType fileType = FileType.any;
     var result = await FilePicker.platform
         .pickFiles(allowMultiple: false, type: fileType);
     if (result == null) {
@@ -81,7 +82,11 @@ class _InputScreenState extends State<InputScreen> {
     }
   }
 
-  Future<void> setImagePath(FileType fileType) async {
+  Future<void> setImagePath() async {
+    FileType fileType = FileType.image;
+    if (Platform.isAndroid) {
+      fileType = FileType.any;
+    }
     var result = await FilePicker.platform
         .pickFiles(allowMultiple: false, type: fileType);
     if (result == null) {
@@ -217,7 +222,7 @@ class _InputScreenState extends State<InputScreen> {
                                           if (kIsWeb) {
                                             setFileBytes(FileType.any);
                                           } else {
-                                            setDocumentPath(FileType.any);
+                                            setDocumentPath();
                                           }
                                         });
                                       },
@@ -290,11 +295,7 @@ class _InputScreenState extends State<InputScreen> {
                                           if (kIsWeb) {
                                             setFileBytes(FileType.image);
                                           } else {
-                                            if (Platform.isAndroid) {
-                                              setImagePath(FileType.any);
-                                            } else {
-                                              setImagePath(FileType.image);
-                                            }
+                                            setImagePath();
                                           }
                                         });
                                       },
