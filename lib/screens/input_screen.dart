@@ -178,7 +178,7 @@ class _InputScreenState extends State<InputScreen> {
                         Column(
                           children: [
                             Container(
-                              margin: const EdgeInsets.all(15.0),
+                              margin: const EdgeInsets.all(3.0),
                               decoration: BoxDecoration(
                                 color: kButtonContainerColor,
                                 borderRadius: BorderRadius.circular(10.0),
@@ -254,7 +254,7 @@ class _InputScreenState extends State<InputScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Container(
-                              margin: const EdgeInsets.all(15.0),
+                              margin: const EdgeInsets.all(3.0),
                               decoration: BoxDecoration(
                                 color: kButtonContainerColor,
                                 borderRadius: BorderRadius.circular(10.0),
