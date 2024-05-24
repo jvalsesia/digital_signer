@@ -5,13 +5,15 @@ class IconContent extends StatelessWidget {
   final IconData widgetIcon;
   final String label;
   final Color foregroundContainerColor;
+  final double iconSize;
 
   const IconContent({
-    Key? key,
+    super.key,
     required this.widgetIcon,
     required this.foregroundContainerColor,
     required this.label,
-  }) : super(key: key);
+    required this.iconSize,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +22,11 @@ class IconContent extends StatelessWidget {
       children: [
         Icon(
           widgetIcon,
-          size: 80.0,
+          size: iconSize,
           color: foregroundContainerColor,
         ),
-        const SizedBox(
-          height: 15.0,
+        SizedBox(
+          height: label.isEmpty ? 0.0 : 15.0,
         ),
         Text(
           label,

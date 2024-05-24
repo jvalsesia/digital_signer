@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:digital_signer/handlers/file_handler.dart';
 import 'package:digital_signer/handlers/rest_handler.dart';
 import 'package:digital_signer/handlers/token_handler.dart';
+import 'package:digital_signer/screens/files_screen.dart';
 import 'package:digital_signer/screens/result_screen.dart';
 import 'package:digital_signer/utils/constants.dart';
 import 'package:digital_signer/utils/icon_content.dart';
@@ -157,191 +158,205 @@ class _InputScreenState extends State<InputScreen> {
       appBar: AppBar(
         title: const Text('ASSINATURA', style: kLargeButtonTextStyle),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: ReusableCard(
-                    cardColor: kInactiveCardColor,
-                    cardChild: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        const IconContent(
-                          widgetIcon: FontAwesomeIcons.file,
-                          label: "DOCUMENTO",
-                          foregroundContainerColor: kForegroundContainerColor,
-                        ),
-                        Column(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.all(15.0),
-                              decoration: BoxDecoration(
-                                color: kButtonContainerColor,
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        const Text(
-                                          "Adicionar documento",
-                                          style: kLabelTextStyle,
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text(
-                                          isDocumentLoaded ? "Ok" : "NENHUM",
-                                          style: isDocumentLoaded
-                                              ? kLabelTextStyleOk
-                                              : kLabelTextStyleNotOk,
-                                        ),
-                                      ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: ReusableCard(
+                      cardColor: kInactiveCardColor,
+                      cardChild: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const IconContent(
+                            widgetIcon: FontAwesomeIcons.file,
+                            label: "DOCUMENTO",
+                            foregroundContainerColor: kForegroundContainerColor,
+                            iconSize: 50.0,
+                          ),
+                          Column(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.all(1.0),
+                                decoration: BoxDecoration(
+                                  color: kButtonContainerColor,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          const Text(
+                                            "Adicionar documento",
+                                            style: kLabelTextStyle,
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text(
+                                            isDocumentLoaded ? "Ok" : "NENHUM",
+                                            style: isDocumentLoaded
+                                                ? kLabelTextStyleOk
+                                                : kLabelTextStyleNotOk,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  RoundIconButton(
-                                    icon: FontAwesomeIcons.plus,
-                                    onPressed: () {
-                                      setState(() {
-                                        if (kIsWeb) {
-                                          setFileBytes(FileType.any);
-                                        } else {
-                                          setDocumentPath(FileType.any);
-                                        }
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    onPress: () {
-                      setState(() async {});
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: ReusableCard(
-                    cardColor: kInactiveCardColor,
-                    cardChild: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        const IconContent(
-                          widgetIcon: FontAwesomeIcons.signature,
-                          label: "ASSINATURA",
-                          foregroundContainerColor: kForegroundContainerColor,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.all(15.0),
-                              decoration: BoxDecoration(
-                                color: kButtonContainerColor,
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        const Text(
-                                          "Adicionar assinatura",
-                                          style: kLabelTextStyle,
-                                        ),
-                                        Text(
-                                          isSignatureLoaded ? "Ok" : "NENHUMA",
-                                          style: isSignatureLoaded
-                                              ? kLabelTextStyleOk
-                                              : kLabelTextStyleNotOk,
-                                        ),
-                                      ],
+                                    RoundIconButton(
+                                      icon: FontAwesomeIcons.plus,
+                                      onPressed: () {
+                                        // setState(() {
+                                        //   if (kIsWeb) {
+                                        //     setFileBytes(FileType.any);
+                                        //   } else {
+                                        //     setDocumentPath(FileType.any);
+                                        //   }
+                                        // });
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const FilesScreen(),
+                                          ),
+                                        );
+                                      },
                                     ),
-                                  ),
-                                  RoundIconButton(
-                                    icon: FontAwesomeIcons.plus,
-                                    onPressed: () {
-                                      setState(() {
-                                        if (kIsWeb) {
-                                          setFileBytes(FileType.image);
-                                        } else {
-                                          if (Platform.isAndroid) {
-                                            setImagePath(FileType.any);
-                                          } else {
-                                            setImagePath(FileType.image);
-                                          }
-                                        }
-                                      });
-                                    },
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    onPress: () {
-                      setState(() {});
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              signDocument().then((response) => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResultScreen(
-                          signedDocumentFilePath: response,
-                        ),
+                            ],
+                          ),
+                        ],
                       ),
-                    )
-                  });
-            },
-            child: Column(
-              children: [
-                Container(
-                  //color: kBottomContainerColor,
-                  margin: const EdgeInsets.only(top: 10.0),
-                  decoration: BoxDecoration(
-                    color: kBottomContainerColor,
-                    borderRadius: BorderRadius.circular(10.0),
+                      onPress: () {
+                        setState(() async {});
+                      },
+                    ),
                   ),
-                  width: double.infinity,
-                  height: kBottomContainerHeight,
-                  child: const Center(
-                    child: Text('ASSINAR', style: kLargeButtonTextStyle),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )
-        ],
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: ReusableCard(
+                      cardColor: kInactiveCardColor,
+                      cardChild: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const IconContent(
+                            widgetIcon: FontAwesomeIcons.signature,
+                            label: "ASSINATURA",
+                            foregroundContainerColor: kForegroundContainerColor,
+                            iconSize: 50.0,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.all(1.0),
+                                decoration: BoxDecoration(
+                                  color: kButtonContainerColor,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          const Text(
+                                            "Adicionar assinatura",
+                                            style: kLabelTextStyle,
+                                          ),
+                                          Text(
+                                            isSignatureLoaded
+                                                ? "Ok"
+                                                : "NENHUMA",
+                                            style: isSignatureLoaded
+                                                ? kLabelTextStyleOk
+                                                : kLabelTextStyleNotOk,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RoundIconButton(
+                                      icon: FontAwesomeIcons.plus,
+                                      onPressed: () {
+                                        setState(() {
+                                          if (kIsWeb) {
+                                            setFileBytes(FileType.image);
+                                          } else {
+                                            if (Platform.isAndroid) {
+                                              setImagePath(FileType.any);
+                                            } else {
+                                              setImagePath(FileType.image);
+                                            }
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      onPress: () {
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                signDocument().then((response) => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResultScreen(
+                            signedDocumentFilePath: response,
+                          ),
+                        ),
+                      )
+                    });
+              },
+              child: Column(
+                children: [
+                  Container(
+                    //color: kBottomContainerColor,
+                    margin: const EdgeInsets.only(top: 10.0),
+                    decoration: BoxDecoration(
+                      color: kBottomContainerColor,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    width: double.infinity,
+                    height: kBottomContainerHeight,
+                    child: const Center(
+                      child: Text('ASSINAR', style: kLargeButtonTextStyle),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
